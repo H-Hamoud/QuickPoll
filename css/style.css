@@ -1,0 +1,390 @@
+/* ============================================================
+   QuickPoll – style.css (minimal)
+   Nur was die Login-Seite wirklich braucht.
+   ============================================================ */
+
+:root {
+    /* Farben */
+    --myapp-brand-color: linear-gradient(
+            190deg,
+            #083e7a,
+            #2d5991,
+            #659b5b
+    );
+    --myapp-text: #123b38;
+    --myapp-text-secondary: #61706f;
+    --myapp-surface: #ffffff;
+    --myapp-border: #e6ecea;
+    --myapp-primary: #2d5991; /* Buttons, Links */
+    --myapp-danger: #ef4444;
+    --myapp-warning: #b45309;
+    --myapp-success: #15803d;
+    --myapp-accent: #f5a623;
+
+    /* Maße */
+    --myapp-header-height: 95px;
+    --myapp-footer-height: 50px;
+}
+
+
+* {
+    box-sizing: border-box;
+}
+
+/* Sticky-Footer-Layout: body ist die einzige Flex-Spalte */
+body {
+    margin: 0;
+    min-height: 100vh;
+    padding-bottom: var(--myapp-footer-height);
+    display: flex;
+    flex-direction: column;
+
+    font-family: "Avenir Medium", Arial, sans-serif;
+    font-size: 16px;
+    color: var(--myapp-text);
+    background-color: var(--myapp-surface);
+
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 28px;
+}
+
+h3 {
+    margin: 24px 0 12px;
+    font-size: 20px;
+}
+a {
+    color: var(--myapp-primary);
+}
+
+/* ----------  Kopf und Fuß -- -------- */
+
+header,
+footer {
+    background: var(--myapp-brand-color);
+    color: #ffffff;
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    flex-shrink: 0;
+
+    height: var(--myapp-header-height);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 40px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    height: var(--myapp-footer-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+footer p {
+    margin: 0;
+}
+
+/*---- Akzent im Markennamen ----*/
+
+.brand-accent {
+    color: var(--myapp-accent);
+}
+
+
+/* margin-left: auto schiebt die Navigation nach rechts */
+header nav {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+}
+
+header nav a {
+    color: inherit;
+}
+
+
+/* ---------- Seiteninhalt ---------- */
+
+main {
+    flex: 1;
+    padding: 40px 20px;
+}
+
+/* Nur für Login und Registrierung: Karte genau in die Mitte */
+main.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Begrenzt die Inhaltsbreite auf großen Bildschirmen */
+.page {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* ---------- Karte ---------- */
+
+.card {
+    padding: 40px;
+    border: 1px solid var(--myapp-border);
+    border-radius: 16px;
+}
+
+.card-narrow {
+    width: 100%;
+    max-width: 450px;
+}
+
+.card-narrow h2 {
+    margin-bottom: 30px;
+    font-size: 30px;
+    text-align: center;
+}
+
+.card > *:first-child {
+    margin-top: 0;
+}
+
+.card > *:last-child {
+    margin-bottom: 0;
+}
+
+/* ---------- Formular ---------- */
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 14px;
+    font: inherit;
+
+    border: 1px solid var(--myapp-border);
+    border-radius: 8px;
+    outline: none;
+
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    resize: vertical;
+    min-height: 100px;
+}
+
+input:focus,
+textarea:focus {
+    border-color: var(--myapp-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--myapp-primary) 20%, transparent);
+}
+
+/* ---------- Button ---------- */
+/* Klappt auf <button> und auf <a class="btn">  */
+
+.btn {
+    display: inline-block;
+    padding: 14px 20px;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+
+    background-color: var(--myapp-primary);
+    color: #ffffff;
+
+    font: inherit;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+
+    cursor: pointer;
+    transition: filter 0.2s;
+}
+
+.btn:hover {
+    filter: brightness(1.15);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border-color: var(--myapp-primary);
+    color: var(--myapp-primary);
+}
+.btn-secondary:hover {
+    filter: none;
+    background-color: color-mix(in srgb, var(--myapp-primary) 10%, #ffffff);
+}
+.btn-block {
+    width: 100%;
+}
+
+/* size modifier */
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* colour modifiers */
+.btn-danger {
+    background-color: var(--myapp-danger);
+}
+
+.btn-success {
+    background-color: var(--myapp-success);
+}
+
+/* New-/share Survey */
+.row-right {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* ---------- Meldungen ---------- */
+.card-narrow .message {
+    text-align: center;
+}
+
+.message {
+    --message-color: var(--myapp-text-secondary);   /* Fallback */
+
+    margin: 0 0 20px;
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+
+    color: var(--message-color);
+    background-color: color-mix(in srgb, var(--message-color) 10%, #ffffff);
+}
+
+.message-error   { --message-color: var(--myapp-danger); }
+.message-success { --message-color: var(--myapp-success); }
+.message-warning { --message-color: var(--myapp-warning); }
+
+
+/* ---------- Trennlinie ---------- */
+
+hr {
+    border: none;
+    border-top: 1px solid var(--myapp-border);
+    margin: 32px 0;
+}
+
+/* ---------- Fragenzeile (survey_edit.php) ---------- */
+
+.question-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 6px 0;
+}
+
+.question-row form {
+    margin: 0;
+}
+
+.question-text {
+    flex: 1;
+}
+
+.question-row input {
+    padding: 8px 10px;
+}
+
+/* ---------- Antwortliste (results.php) ---------- */
+
+.answer-list {
+    list-style: none;
+    margin: 0 0 32px;
+    padding: 0;
+}
+
+.answer-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--myapp-border);
+}
+
+.answer-text {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: break-word;
+}
+
+.answer-list .text-muted {
+    flex-shrink: 0;
+    white-space: nowrap;
+
+}
+
+/* ---------- Hilfsklassen ---------- */
+
+.text-muted {
+    color: var(--myapp-text-secondary);
+    font-size: 13px;
+}
+.text-success {
+    color: var(--myapp-success);
+}
+/* ---------- Tabelle ---------- */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--myapp-border);
+}
+
+th {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--myapp-text-secondary);
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ---------- Kleine Bildschirme ---------- */
+
+@media (max-width: 600px) {
+    header {
+        padding: 0 20px;
+    }
+
+    header h1 {
+        font-size: 24px;
+    }
+
+    .card {
+        padding: 24px;
+    }
+}

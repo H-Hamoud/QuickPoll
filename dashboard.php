@@ -33,27 +33,33 @@ $surveys = $stmt->fetchAll();   // array of rows (may be empty)
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
-
-<p>
-    Eingeloggt als <?= htmlspecialchars($user['email']) ?> ·
-    <a href="subscription.php">Mein Abo</a> ·
-    <a href="logout.php">Logout</a>
-</p>
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+    <nav>
+        <span><?= htmlspecialchars($user['email']) ?></span>
+        <a href="subscription.php">Mein Abo</a>
+        <a href="logout.php">Logout</a>
+    </nav>
+</header>
+<main>
+    <div class="page">
 
 <h2>Meine Fragebögen</h2>
 
 <?php if ($user['abo_status'] === 'aktiv'): ?>
-    <p><a href="survey_create.php">+ Neuen Fragebogen anlegen</a></p>
+    <p class="row-right"><a href="survey_create.php" class="btn">+ Neuen Fragebogen anlegen</a></p>
 <?php else: ?>
-    <p style="color: darkorange;">
+    <p class="message message-warning">
         Um Fragebögen zu erstellen, brauchst du ein aktives Abo.
         <a href="subscription.php">Jetzt abschließen (2 €/Monat)</a>
     </p>
 <?php endif; ?>
+        <section class="card">
 
 <?php if (empty($surveys)): ?>
 
@@ -61,13 +67,16 @@ $surveys = $stmt->fetchAll();   // array of rows (may be empty)
 
 <?php else: ?>
 
-    <table border="1" cellpadding="8">
+    <table>
+        <thead>
         <tr>
             <th>Titel</th>
             <th>Status</th>
             <th>Erstellt am</th>
             <th>Aktionen</th>
         </tr>
+        </thead>
+        <tbody>
         <?php foreach ($surveys as $survey): ?>
             <tr>
                 <td><?= htmlspecialchars($survey['titel']) ?></td>
@@ -79,8 +88,15 @@ $surveys = $stmt->fetchAll();   // array of rows (may be empty)
                 </td>
             </tr>
         <?php endforeach; ?>
+        </tbody>
     </table>
 
 <?php endif; ?>
+        </section>
+    </div>
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
 </body>
 </html>

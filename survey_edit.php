@@ -32,6 +32,10 @@ if (!$survey) {
     exit;
 }
 
+
+// Which question is currently in edit mode? 0 = none.
+$editId = (int)($_GET['edit'] ?? 0);
+
 $errors = [];
 
 // ---------- Process actions ----------
@@ -90,7 +94,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         );
         $stmt->execute([$questionId, $surveyId]);
 
-    } elseif ($action === 'publish') {
+    }elseif ($action === 'edit_question') {
+        $questionId = (int)($_POST['question_id'] ?? 0);
+        $questionText = trim($_POST['question_text'] ?? '');
+
+        if ($questionText === '') {
+            $errors[] = 'Der Frage darf nicht leer sein.';
+        }else{
+            $stmt = $pdo->prepare(
+                    'UPDATE frage 
+                            SET text = ? 
+                            where id = ? and 
+                            fragebogen_id = ?'
+            );
+            $stmt->execute([ $questionText, $questionId, $surveyId]);
+        }
+
+    }elseif ($action === 'publish') {
 
         $stmt = $pdo->prepare(
             'UPDATE fragebogen SET veroeffentlicht = 1 WHERE id = ?'
@@ -134,28 +154,37 @@ $questions = $stmt->fetchAll();
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – Fragebogen bearbeiten</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
-<p><a href="dashboard.php">&larr; Zurück zum Dashboard</a></p>
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+    <nav>
+        <a href="dashboard.php">&larr; Zurück zum Dashboard</a>
+    </nav>
+</header>
+<main>
+<div class="page">
 
 <h2>Fragebogen bearbeiten</h2>
 
 <?php foreach ($errors as $error): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
+    <p class="message message-error"><?= htmlspecialchars($error) ?></p>
 <?php endforeach; ?>
 
 <!-- ---------- Status + publish / hide ---------- -->
 <?php if ($survey['veroeffentlicht']): ?>
 
-    <p>
-        Status: <b>Veröffentlicht</b> – öffentlicher Link für Endnutzer:
+    <p>Status: <b>Veröffentlicht</b></p>
+    <div class="row-right">
+        Fragebogen teilen:
         <a href="survey.php?id=<?= $surveyId ?>">survey.php?id=<?= $surveyId ?></a>
-    </p>
+    </div>
     <form method="post" action="survey_edit.php?id=<?= $surveyId ?>">
         <input type="hidden" name="action" value="unpublish">
-        <button type="submit">Auf Entwurf zurücksetzen</button>
+        <button type="submit" class="btn btn-secondary">Auf Entwurf zurücksetzen</button>
     </form>
 
 <?php else: ?>
@@ -163,7 +192,7 @@ $questions = $stmt->fetchAll();
     <p>Status: <b>Entwurf</b> (für Endnutzer noch nicht sichtbar)</p>
     <form method="post" action="survey_edit.php?id=<?= $surveyId ?>">
         <input type="hidden" name="action" value="publish">
-        <button type="submit">Veröffentlichen</button>
+        <button type="submit" class="btn">Veröffentlichen</button>
     </form>
 
 <?php endif; ?>
@@ -179,9 +208,9 @@ $questions = $stmt->fetchAll();
                value="<?= htmlspecialchars($survey['titel']) ?>">
     </label><br><br>
     <label>Beschreibung:<br>
-        <textarea name="description" rows="3" cols="50"><?= htmlspecialchars($survey['beschreibung'] ?? '') ?></textarea>
+        <textarea name="description" rows="3"><?= htmlspecialchars($survey['beschreibung'] ?? '') ?></textarea>
     </label><br><br>
-    <button type="submit">Speichern</button>
+    <button type="submit" class="btn btn-success">Speichern</button>
 </form>
 
 <hr>
@@ -195,14 +224,36 @@ $questions = $stmt->fetchAll();
     <ol>
         <?php foreach ($questions as $question): ?>
             <li>
-                <?= htmlspecialchars($question['text']) ?>
-                <!-- Data-changing actions run as POST forms,
-                     never as plain GET links -->
-                <form method="post" action="survey_edit.php?id=<?= $surveyId ?>" style="display: inline;">
-                    <input type="hidden" name="action" value="delete_question">
-                    <input type="hidden" name="question_id" value="<?= $question['id'] ?>">
-                    <button type="submit">Löschen</button>
-                </form>
+                <?php if ((int)$question['id'] === $editId): ?>
+
+                    <form method="post"
+                          action="survey_edit.php?id=<?= $surveyId ?>&amp;edit=<?= $question['id'] ?>"
+                          class="question-row">
+                        <input type="hidden" name="action" value="edit_question">
+                        <input type="hidden" name="question_id" value="<?= $question['id'] ?>">
+                        <input type="text" name="question_text" class="question-text"
+                               value="<?= htmlspecialchars($question['text']) ?>">
+                        <button type="submit" class="btn btn-sm btn-success">Speichern</button>
+                        <a href="survey_edit.php?id=<?= $surveyId ?>"
+                           class="btn btn-sm btn-secondary">Abbrechen</a>
+                    </form>
+
+                <?php else: ?>
+
+                    <div class="question-row">
+                        <span class="question-text"><?= htmlspecialchars($question['text']) ?></span>
+
+                        <a href="survey_edit.php?id=<?= $surveyId ?>&amp;edit=<?= $question['id'] ?>"
+                           class="btn btn-sm">Ändern</a>
+
+                        <form method="post" action="survey_edit.php?id=<?= $surveyId ?>">
+                            <input type="hidden" name="action" value="delete_question">
+                            <input type="hidden" name="question_id" value="<?= $question['id'] ?>">
+                            <button type="submit" class="btn btn-sm btn-danger">Löschen</button>
+                        </form>
+                    </div>
+
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ol>
@@ -213,7 +264,7 @@ $questions = $stmt->fetchAll();
     <label>Neue Frage:<br>
         <input type="text" name="question_text" size="50">
     </label>
-    <button type="submit">+ Hinzufügen</button>
+    <button type="submit" class="btn">+ Hinzufügen</button>
 </form>
 
 <hr>
@@ -223,7 +274,13 @@ $questions = $stmt->fetchAll();
 <form method="post" action="survey_edit.php?id=<?= $surveyId ?>"
       onsubmit="return confirm('Diesen Fragebogen wirklich löschen? Alle Fragen und Antworten gehen verloren.');">
     <input type="hidden" name="action" value="delete_survey">
-    <button type="submit" style="color: red;">Fragebogen löschen</button>
+    <button type="submit" class="btn btn-danger">Fragebogen löschen</button>
 </form>
+</div>
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
+
 </body>
 </html>

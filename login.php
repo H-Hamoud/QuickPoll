@@ -7,6 +7,11 @@
 // Start the session – MUST be at the very top,
 // before any HTML output is sent.
 // The session remembers across page loads WHO is logged in.
+session_set_cookie_params([
+        'httponly' => true,                    // JS kommt nicht ans Cookie
+        'samesite' => 'Lax',                   // nicht bei fremden POSTs mitschicken
+        'secure'   => isset($_SERVER['HTTPS']),
+]);
 session_start();
 
 require_once __DIR__ . '/includes/db.php';
@@ -17,7 +22,7 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $email    = trim($_POST['email'] ?? '');
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($email === '' || $password === '') {
@@ -31,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // password_verify() compares the entered password
         // with the stored hash from the database.
         if ($user && password_verify($password, $user['passwort_hash'])) {
-
+            session_regenerate_id(true);// alte Session wird gelöscht
             // Login successful: store the user ID in the session.
             // From now on, every page knows who is logged in.
             $_SESSION['user_id'] = $user['id'];
@@ -53,29 +58,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – Login</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
-<h2>Anmelden</h2>
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+</header>
+<main class="centered">
+    <section class="card card-narrow">
+        <h2>Anmelden</h2>
 
-<?php foreach ($errors as $error): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-<?php endforeach; ?>
+        <?php foreach ($errors as $error): ?>
+            <p class="message message-error"><?= htmlspecialchars($error) ?></p>
+        <?php endforeach; ?>
 
-<form method="post" action="login.php">
-    <label>E-Mail:<br>
-        <input type="email" name="email"
-               value="<?= htmlspecialchars($email ?? '') ?>">
-    </label><br><br>
+        <form method="post" action="login.php">
+            <div class="form-group">
+                <label>E-Mail:<br>
+                    <input type="email" name="email"
+                           value="<?= htmlspecialchars($email ?? '') ?>">
+                </label>
 
-    <label>Passwort:<br>
-        <input type="password" name="password">
-    </label><br><br>
+                <label>Passwort:
+                    <input type="password" name="password">
+                </label>
 
-    <button type="submit">Einloggen</button>
-</form>
+                <button type="submit" class="btn btn-block">Einloggen</button>
+            </div>
+        </form>
 
-<p>Noch kein Konto? <a href="register.php">Registrieren</a></p>
+        <p>Noch kein Konto? <a href="register.php">Registrieren</a></p>
+    </section>
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
 </body>
 </html>

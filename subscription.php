@@ -32,7 +32,7 @@ $user = $stmt->fetch();
 // Tell the Stripe library which account to use
 \Stripe\Stripe::setApiKey(STRIPE_SECRET_KEY);
 
-$errors  = [];
+$errors = [];
 $message = '';
 
 // ---------- Step 5: back from Stripe ----------
@@ -49,7 +49,7 @@ if (isset($_GET['session_id'])) {
         if ($checkoutSession->payment_status === 'paid') {
 
             $stmt = $pdo->prepare(
-                'UPDATE nutzer
+                    'UPDATE nutzer
                  SET abo_status = ?, stripe_customer_id = ?
                  WHERE id = ?'
             );
@@ -73,15 +73,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'subsc
 
     try {
         $checkoutSession = \Stripe\Checkout\Session::create([
-            'mode'        => 'subscription',          // recurring, not one-off
-            'line_items'  => [[
-                'price'    => STRIPE_PRICE_ID,        // the 2 EUR/month price
-                'quantity' => 1,
-            ]],
-            'customer_email' => $user['email'],
+                'mode' => 'subscription',          // recurring, not one-off
+                'line_items' => [[
+                        'price' => STRIPE_PRICE_ID,        // the 2 EUR/month price
+                        'quantity' => 1,
+                ]],
+                'customer_email' => $user['email'],
             // {CHECKOUT_SESSION_ID} is replaced by Stripe automatically
-            'success_url' => BASE_URL . '/subscription.php?session_id={CHECKOUT_SESSION_ID}',
-            'cancel_url'  => BASE_URL . '/subscription.php?cancelled=1',
+                'success_url' => BASE_URL . '/subscription.php?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => BASE_URL . '/subscription.php?cancelled=1',
         ]);
 
         // Off to Stripe's payment page
@@ -101,46 +101,61 @@ if (isset($_GET['cancelled'])) {
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – Mein Abo</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
-<p><a href="dashboard.php">&larr; Zurück zum Dashboard</a></p>
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+    <nav>
+        <a href="dashboard.php">&larr; Zurück zum Dashboard</a>
+    </nav>
+</header>
+<main>
+    <div class="page">
+        <section class="card">
 
-<h2>Mein Abo</h2>
+            <h2>Mein Abo</h2>
 
-<?php if ($message): ?>
-    <p style="color: green;"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+            <?php if ($message): ?>
+                <p class="message message-success"><?= htmlspecialchars($message) ?></p>
+            <?php endif; ?>
 
-<?php foreach ($errors as $error): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-<?php endforeach; ?>
+            <?php foreach ($errors as $error): ?>
+                <p class="message message-error"><?= htmlspecialchars($error) ?></p>
+            <?php endforeach; ?>
 
-<?php if ($user['abo_status'] === 'aktiv'): ?>
+            <?php if ($user['abo_status'] === 'aktiv'): ?>
 
-    <p>Status: <b style="color: green;">Aktiv</b></p>
-    <p>Du kannst unbegrenzt Fragebögen erstellen.</p>
-    <p><a href="survey_create.php">+ Neuen Fragebogen anlegen</a></p>
+                <p>Status: <b class="text-success">Aktiv</b></p>
+                <p>Du kannst unbegrenzt Fragebögen erstellen.</p>
+                <p><a href="survey_create.php" class="btn">+ Neuen Fragebogen anlegen</a></p>
 
-<?php else: ?>
+            <?php else: ?>
 
-    <p>Status: <b>Kein Abo</b></p>
-    <p>
-        Um Fragebögen zu erstellen, brauchst du ein Abo:<br>
-        <b>2 € pro Monat</b> – unbegrenzt viele Fragebögen.
-    </p>
+                <p>Status: <b>Kein Abo</b></p>
+                <p>
+                    Um Fragebögen zu erstellen, brauchst du ein Abo:<br>
+                    <b>2 € pro Monat</b> – unbegrenzt viele Fragebögen.
+                </p>
 
-    <form method="post" action="subscription.php">
-        <input type="hidden" name="action" value="subscribe">
-        <button type="submit">Jetzt abonnieren (2 €/Monat)</button>
-    </form>
+                <form method="post" action="subscription.php">
+                    <input type="hidden" name="action" value="subscribe">
+                    <button type="submit" class="btn">Jetzt abonnieren (2 €/Monat)</button>
+                </form>
 
-    <p style="color: gray; font-size: small;">
-        Testmodus (Stripe Sandbox): Es wird kein echtes Geld abgebucht.<br>
-        Testkarte: 4242 4242 4242 4242 · beliebiges Datum in der Zukunft · beliebige CVC.
-    </p>
+                <p class="text-muted">
+                    Testmodus (Stripe Sandbox): Es wird kein echtes Geld abgebucht.<br>
+                    Testkarte: 4242 4242 4242 4242 · beliebiges Datum in der Zukunft · beliebige CVC.
+                </p>
 
-<?php endif; ?>
+            <?php endif; ?>
+        </section>
+    </div>
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
 </body>
 </html>

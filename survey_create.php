@@ -28,7 +28,7 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $title       = trim($_POST['title'] ?? '');
+    $title = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
 
     if ($title === '') {
@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // nutzer_id comes from the SESSION, never from the form –
         // so nobody can create questionnaires for somebody else.
         $stmt = $pdo->prepare(
-            'INSERT INTO fragebogen (nutzer_id, titel, beschreibung)
+                'INSERT INTO fragebogen (nutzer_id, titel, beschreibung)
              VALUES (?, ?, ?)'
         );
         $stmt->execute([$userId, $title, $description]);
@@ -60,29 +60,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – Neuer Fragebogen</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
-<p><a href="dashboard.php">&larr; Zurück zum Dashboard</a></p>
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+    <nav>
+        <a href="dashboard.php">&larr; Zurück zum Dashboard</a>
+    </nav>
+</header>
+<main>
+    <div class="page">
+        <section class="card">
+            <h2>Neuen Fragebogen anlegen</h2>
 
-<h2>Neuen Fragebogen anlegen</h2>
+            <?php foreach ($errors as $error): ?>
+                <p class="message message-error"><?= htmlspecialchars($error) ?></p>
+            <?php endforeach; ?>
 
-<?php foreach ($errors as $error): ?>
-    <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-<?php endforeach; ?>
+            <form method="post" action="survey_create.php">
+                <label>Titel:<br>
+                    <input type="text" name="title" size="50"
+                           value="<?= htmlspecialchars($title ?? '') ?>">
+                </label><br><br>
 
-<form method="post" action="survey_create.php">
-    <label>Titel:<br>
-        <input type="text" name="title" size="50"
-               value="<?= htmlspecialchars($title ?? '') ?>">
-    </label><br><br>
+                <label>Beschreibung (optional):<br>
+                    <textarea name="description" rows="4"
+                              cols="50"><?= htmlspecialchars($description ?? '') ?></textarea>
+                </label><br><br>
 
-    <label>Beschreibung (optional):<br>
-        <textarea name="description" rows="4" cols="50"><?= htmlspecialchars($description ?? '') ?></textarea>
-    </label><br><br>
+                <button type="submit" class="btn">Anlegen</button>
 
-    <button type="submit">Anlegen</button>
-</form>
+            </form>
+        </section>
+    </div>
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
 </body>
 </html>

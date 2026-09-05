@@ -75,11 +75,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – <?= htmlspecialchars($survey['titel']) ?></title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
 
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+    <nav>
+        <a href="dashboard.php">&larr; Zurück zum Dashboard</a>
+    </nav>
+</header>
+<main>
+    <div class="page">
 <h2><?= htmlspecialchars($survey['titel']) ?></h2>
 
 <?php if (!empty($survey['beschreibung'])): ?>
@@ -88,18 +97,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php if ($saved): ?>
 
-    <p style="color: green;">
+    <p class="message message-success">
         Vielen Dank! Deine Antworten wurden gespeichert.
     </p>
 
 <?php elseif (empty($questions)): ?>
 
-    <p>Diese Umfrage enthält noch keine Fragen.</p>
+    <p class="message message-warning">Diese Umfrage enthält noch keine Fragen.</p>
 
 <?php else: ?>
 
     <?php foreach ($errors as $error): ?>
-        <p style="color: red;"><?= htmlspecialchars($error) ?></p>
+        <p class="message message-error"><?= htmlspecialchars($error) ?></p>
     <?php endforeach; ?>
 
     <form method="post" action="survey.php?id=<?= $surveyId ?>">
@@ -112,9 +121,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </p>
         <?php endforeach; ?>
 
-        <button type="submit">Antworten absenden</button>
+        <button class="btn btn-block" type="submit" >Antworten absenden</button>
     </form>
 
 <?php endif; ?>
+
+</div>
+
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
 </body>
 </html>

@@ -64,44 +64,57 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="de">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>QuickPoll – Registrierung</title>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<h1>QuickPoll</h1>
-<h2>Registrieren</h2>
+<header>
+    <h1>Quick<span class="brand-accent">Poll</span></h1>
+</header>
+<main class="centered">
+    <section class="card card-narrow">
+        <h2>Registrieren</h2>
 
-<?php if ($success): ?>
+        <?php if ($success): ?>
 
-    <p style="color: green;">
-        Registrierung erfolgreich! Du kannst dich jetzt
-        <a href="login.php">einloggen</a>.
-    </p>
+            <p class="message message-success">
+                Registrierung erfolgreich! Du kannst dich jetzt
+                <a href="login.php">einloggen</a>.
+            </p>
 
-<?php else: ?>
+        <?php else: ?>
 
-    <?php foreach ($errors as $error): ?>
-        <p style="color: red;"><?= htmlspecialchars($error) ?></p>
-    <?php endforeach; ?>
+            <?php foreach ($errors as $error): ?>
+                <p class="message message-error"><?= htmlspecialchars($error) ?></p>
+            <?php endforeach; ?>
 
-    <form method="post" action="register.php">
-        <label>E-Mail:<br>
-            <input type="email" name="email"
-                   value="<?= htmlspecialchars($email ?? '') ?>">
-        </label><br><br>
+            <form method="post" action="register.php">
+                <div class="form-group">
+                    <label>E-Mail:<br>
+                        <input type="email" name="email"
+                               value="<?= htmlspecialchars($email ?? '') ?>">
+                    </label>
 
-        <label>Passwort (mind. 8 Zeichen):<br>
-            <input type="password" name="password">
-        </label><br><br>
+                    <label>Passwort (mind. 8 Zeichen):<br>
+                        <input type="password" name="password">
+                    </label>
 
-        <label>Passwort wiederholen:<br>
-            <input type="password" name="password2">
-        </label><br><br>
+                    <label>Passwort wiederholen:<br>
+                        <input type="password" name="password2">
+                    </label>
 
-        <button type="submit">Registrieren</button>
-    </form>
+                    <button type="submit" class="btn btn-block">Registrieren</button>
+                </div>
+            </form>
 
-    <p>Schon ein Konto? <a href="login.php">Zum Login</a></p>
+            <p>Schon ein Konto? <a href="login.php">Zum Login</a></p>
 
-<?php endif; ?>
+        <?php endif; ?>
+    </section>
+</main>
+<footer>
+    <p>QuickPoll &ndash; Studienprojekt Internetserver-Programmierung</p>
+</footer>
 </body>
 </html>
