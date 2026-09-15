@@ -10,7 +10,7 @@
 // Publishable key (public, safe to appear in the browser)
 define('STRIPE_PUBLISHABLE_KEY', 'pk_test_XXXXXXXXXXXXXXXX');
 
-// Secret key (NEVER share, never commit to Git!)
+// Secret key
 define('STRIPE_SECRET_KEY', 'sk_test_XXXXXXXXXXXXXXXX');
 
 // Price ID of the subscription product (Stripe dashboard > product catalogue)

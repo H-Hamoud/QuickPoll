@@ -36,14 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // password_verify() compares the entered password
         // with the stored hash from the database.
         if ($user && password_verify($password, $user['passwort_hash'])) {
-            session_regenerate_id(true);// alte Session wird gelöscht
+            session_regenerate_id(true);// remove old session
             // Login successful: store the user ID in the session.
             // From now on, every page knows who is logged in.
             $_SESSION['user_id'] = $user['id'];
 
             // Continue to the dashboard
             header('Location: dashboard.php');
-            exit;   // important: always stop after a redirect
+            exit;   // stop after a redirect
 
         } else {
             // Deliberately ONE shared message for both cases

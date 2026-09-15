@@ -53,10 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($title === '') {
             $errors[] = 'Der Titel darf nicht leer sein.';
         } else {
-            $stmt = $pdo->prepare(
-                'UPDATE fragebogen SET titel = ?, beschreibung = ?
-                 WHERE id = ?'
-            );
+            $stmt = $pdo->prepare('UPDATE fragebogen SET titel = ?, beschreibung = ? WHERE id = ?');
             $stmt->execute([$title, $description, $surveyId]);
         }
 
@@ -69,17 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             // Next position = highest existing position + 1.
             // COALESCE turns NULL (no questions yet) into 0.
-            $stmt = $pdo->prepare(
-                'SELECT COALESCE(MAX(reihenfolge), 0) + 1
-                 FROM frage WHERE fragebogen_id = ?'
-            );
+            $stmt = $pdo->prepare('SELECT COALESCE(MAX(reihenfolge), 0) + 1 FROM frage WHERE fragebogen_id = ?');
             $stmt->execute([$surveyId]);
             $position = $stmt->fetchColumn();
 
-            $stmt = $pdo->prepare(
-                'INSERT INTO frage (fragebogen_id, text, reihenfolge)
-                 VALUES (?, ?, ?)'
-            );
+            $stmt = $pdo->prepare('INSERT INTO frage (fragebogen_id, text, reihenfolge) VALUES (?, ?, ?)');
             $stmt->execute([$surveyId, $questionText, $position]);
         }
 
@@ -89,9 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Same ownership idea one level down: the question must belong
         // to THIS (already verified) questionnaire.
-        $stmt = $pdo->prepare(
-            'DELETE FROM frage WHERE id = ? AND fragebogen_id = ?'
-        );
+        $stmt = $pdo->prepare('DELETE FROM frage WHERE id = ? AND fragebogen_id = ?');
         $stmt->execute([$questionId, $surveyId]);
 
     }elseif ($action === 'edit_question') {
@@ -105,8 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'UPDATE frage 
                             SET text = ? 
                             where id = ? and 
-                            fragebogen_id = ?'
-            );
+                            fragebogen_id = ?' );
             $stmt->execute([ $questionText, $questionId, $surveyId]);
         }
 
