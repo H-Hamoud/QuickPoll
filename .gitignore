@@ -1,18 +1,31 @@
 # ---- Secrets: never commit ----
-# Contains the real Stripe keys.
+# Contains the real database password and Stripe keys.
 # config.example.php (with placeholders) IS committed as a template.
 includes/config.php
+storage/app_secret.php
 
+# ---- Runtime files ----
+storage/logs/*
+!storage/logs/.gitkeep
 
- # ---- IDE and OS files ----
+# ---- IDE and OS files ----
 .idea/
 *.iml
 .DS_Store
 Thumbs.db
 
+# ---- Database backups (contain real data) ----
+backup*.sql
 
+# ---- Cache (public keys of sign-in providers) ----
+storage/cache/*
+!storage/cache/.gitkeep
 
+# ---- Settings with secrets (see .env.example) ----
+.env
+# Variants like .env.local or .env.production – only the template is committed
+.env.*
+!.env.example
 
-
-
-
+# ---- Log files anywhere (e.g. a php-error.log written outside storage/) ----
+*.log
