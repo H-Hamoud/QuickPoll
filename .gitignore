@@ -1,4 +1,3 @@
-# ---- Secrets: never commit ----
 # Contains the real database password and Stripe keys.
 # config.example.php (with placeholders) IS committed as a template.
 includes/config.php
