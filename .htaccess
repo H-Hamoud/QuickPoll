@@ -1,0 +1,25 @@
+# ============================================================
+#  QuickPoll – Apache settings for the project root
+# ============================================================
+
+# No directory listings (e.g. /assets/ would otherwise show its files)
+Options -Indexes
+
+# Hidden files (.git, .gitignore, .htaccess …) and docs are not public
+<FilesMatch "^\.|\.(md|sql|log)$">
+    Require all denied
+</FilesMatch>
+
+# Do not announce the PHP version
+<IfModule mod_headers.c>
+    Header unset X-Powered-By
+</IfModule>
+
+# Long cache for fonts, short cache for CSS/JS (they change with releases)
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType text/css "access plus 1 hour"
+    ExpiresByType application/javascript "access plus 1 hour"
+    ExpiresByType image/svg+xml "access plus 1 week"
+</IfModule>

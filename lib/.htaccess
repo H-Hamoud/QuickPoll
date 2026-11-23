@@ -1,0 +1,2 @@
+# This folder contains code, secrets or logs – never serve it directly.
+Require all denied
