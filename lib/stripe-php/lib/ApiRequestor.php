@@ -272,8 +272,167 @@ class ApiRequestor
                 return Exception\IdempotencyException::factory($msg, $rcode, $rbody, $resp, $rheaders, $code);
 
                 // switchCases: The beginning of the section generated from our OpenAPI spec
+            case 'already_canceled':
+                return Exception\AlreadyCanceledException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'blocked_by_stripe':
+                return Exception\BlockedByStripeException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'cannot_proceed':
+                $reason = isset($errorData['reason']) ? $errorData['reason'] : null;
+
+                return Exception\CannotProceedException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code,
+                    $reason
+                );
+
+            case 'capability_not_enabled':
+                return Exception\CapabilityNotEnabledException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'controlled_by_alternate_resource':
+                return Exception\ControlledByAlternateResourceException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'feature_not_enabled':
+                return Exception\FeatureNotEnabledException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'financial_account_not_open':
+                return Exception\FinancialAccountNotOpenException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'fx_quote_needs_refresh':
+                return Exception\FxQuoteNeedsRefreshException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'insufficient_funds':
+                return Exception\InsufficientFundsException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'invalid_payment_method':
+                $invalidParam = isset($errorData['invalid_param']) ? $errorData['invalid_param'] : null;
+
+                return Exception\InvalidPaymentMethodException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code,
+                    $invalidParam
+                );
+
+            case 'invalid_payout_method':
+                return Exception\InvalidPayoutMethodException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'invalid_vaulted_credential':
+                $invalidParam = isset($errorData['invalid_param']) ? $errorData['invalid_param'] : null;
+
+                return Exception\InvalidVaultedCredentialException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code,
+                    $invalidParam
+                );
+
+            case 'not_cancelable':
+                return Exception\NotCancelableException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'quota_exceeded':
+                return Exception\QuotaExceededException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
             case 'rate_limit':
                 return Exception\RateLimitException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code
+                );
+
+            case 'recipient_not_notifiable':
+                return Exception\RecipientNotNotifiableException::factory(
                     $msg,
                     $rcode,
                     $rbody,
@@ -290,6 +449,45 @@ class ApiRequestor
                     $resp,
                     $rheaders,
                     $code
+                );
+
+            case 'verification_attempt_failed':
+                $verificationStatus = isset($errorData['verification_status']) ? $errorData['verification_status'] : null;
+
+                return Exception\VerificationAttemptFailedException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code,
+                    $verificationStatus
+                );
+
+            case 'verification_expired':
+                $verificationStatus = isset($errorData['verification_status']) ? $errorData['verification_status'] : null;
+
+                return Exception\VerificationExpiredException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code,
+                    $verificationStatus
+                );
+
+            case 'verification_not_initiated':
+                $verificationStatus = isset($errorData['verification_status']) ? $errorData['verification_status'] : null;
+
+                return Exception\VerificationNotInitiatedException::factory(
+                    $msg,
+                    $rcode,
+                    $rbody,
+                    $resp,
+                    $rheaders,
+                    $code,
+                    $verificationStatus
                 );
 
                 // switchCases: The end of the section generated from our OpenAPI spec
@@ -397,6 +595,7 @@ class ApiRequestor
         ['CODEX_CI', 'codex_cli'],
         ['CURSOR_AGENT', 'cursor'],
         ['GEMINI_CLI', 'gemini_cli'],
+        ['HERMES_AGENT', 'hermes'],
         ['OPENCLAW_SHELL', 'openclaw'],
         ['OPENCODE', 'open_code'],
         // aiAgents: The end of the section generated from our OpenAPI spec
@@ -435,31 +634,17 @@ class ApiRequestor
 
         // Fallback to global configuration to maintain backwards compatibility.
         $appInfo = $appInfo ?: Stripe::getAppInfo();
-        // `static` here means it persists for the lifetime of the process
-        static $cachedSource = null;
-        if (null === $cachedSource) {
-            $uname_disabled = self::_isDisabled(\ini_get('disable_functions'), 'php_uname');
-            if ($uname_disabled) {
-                $cachedSource = false;
-            } else {
-                $parts = [\php_uname()];
-                $hostname_disabled = self::_isDisabled(\ini_get('disable_functions'), 'gethostname');
-                if (!$hostname_disabled) {
-                    $parts[] = \gethostname();
-                }
-                $cachedSource = \md5(\implode(' ', $parts));
-            }
-        }
 
         $ua = [
             'bindings_version' => Stripe::VERSION,
             'lang' => 'php',
             'lang_version' => $langVersion,
         ];
-        if ($cachedSource) {
-            $ua['source'] = $cachedSource;
-        }
         if (Stripe::getEnableTelemetry()) {
+            $telemetryId = TelemetryId::get();
+            if (null !== $telemetryId) {
+                $ua['telemetry_id'] = $telemetryId;
+            }
             $uname_disabled = self::_isDisabled(\ini_get('disable_functions'), 'php_uname');
             $ua['platform'] = $uname_disabled
                 ? '(disabled)'
@@ -489,6 +674,71 @@ class ApiRequestor
     }
 
     /**
+     * Asserts that a request path is origin-relative: that it begins with a
+     * single "/" and carries no scheme, authority or userinfo.
+     *
+     * The absolute URL is built by concatenating the API base onto this path,
+     * and no base URL ends in a slash. A path like "@evil.example/v1/x" or
+     * ".evil.example/v1/x" would modify the resulting host and direct the
+     * request (including the API key) to a non-Stripe host.
+     *
+     * Because some relative urls arrive from potentially untrusted sources (like
+     * webhook bodies), we have to be a little defensive.
+     *
+     * So, we require that a path starts with a leading slash and that
+     * parse_url() finds no scheme or authority in it.
+     *
+     * @param string $url
+     *
+     * @throws Exception\InvalidArgumentException
+     */
+    private static function validatePath($url)
+    {
+        if (!\is_string($url) || '/' !== \substr($url, 0, 1) || '//' === \substr($url, 0, 2)) {
+            throw new Exception\InvalidArgumentException(
+                'Request path must be a string beginning with a single "/".'
+            );
+        }
+
+        $parts = \parse_url($url);
+        if (false === $parts || isset($parts['scheme']) || isset($parts['host']) || isset($parts['user'])) {
+            throw new Exception\InvalidArgumentException(
+                'Request path may not contain a scheme or authority.'
+            );
+        }
+    }
+
+    /**
+     * Rejects CR, LF and NUL in a header name or value.
+     *
+     * Header lines are assembled by concatenation, so a newline in either half
+     * would let the remainder be parsed as additional headers. Some of these
+     * values originate in remote data - fetchRelatedObject() sets Stripe-Context
+     * and Stripe-Request-Trigger from the webhook body - and a per-request
+     * api_key reaches the Authorization value without the whitespace check that
+     * Stripe::setApiKey() applies.
+     *
+     * @param string $header
+     * @param mixed  $value
+     *
+     * @throws Exception\InvalidArgumentException
+     */
+    private static function assertNoHeaderInjection($header, $value)
+    {
+        foreach ([$header, $value] as $part) {
+            if (!\is_string($part)) {
+                continue;
+            }
+
+            if (false !== \strpbrk($part, "\r\n") || false !== \strpos($part, "\0")) {
+                throw new Exception\InvalidArgumentException(
+                    'Header names and values may not contain CR, LF or NUL characters.'
+                );
+            }
+        }
+    }
+
+    /**
      * @param 'delete'|'get'|'post' $method
      * @param string $url
      * @param array $params
@@ -497,10 +747,14 @@ class ApiRequestor
      */
     private function _prepareRequest($method, $url, $params, $headers, $apiMode)
     {
+        Util\AgentPluginHint::maybeEmit();
+
         $myApiKey = $this->_apiKey;
         if (!$myApiKey) {
             $myApiKey = Stripe::$apiKey;
         }
+
+        Util\RequestOptions::assertApiKeyAttached($myApiKey);
 
         if (!$myApiKey) {
             $msg = 'No API key provided.  (HINT: set your API key using '
@@ -534,6 +788,7 @@ class ApiRequestor
             }
         }
 
+        self::validatePath($url);
         $absUrl = $this->_apiBase . $url;
         if ('v1' === $apiMode) {
             $params = self::_encodeObjects($params);
@@ -569,20 +824,47 @@ class ApiRequestor
         }
 
         $combinedHeaders = \array_merge($defaultHeaders, $headers);
+
+        // Remove the explicit-clear sentinel after it overrides the process-global account.
+        if (isset($combinedHeaders['Stripe-Account']) && Util\RequestOptions::STRIPE_ACCOUNT_UNSET === $combinedHeaders['Stripe-Account']) {
+            unset($combinedHeaders['Stripe-Account']);
+        }
+
         $rawHeaders = [];
 
         foreach ($combinedHeaders as $header => $value) {
+            self::assertNoHeaderInjection($header, $value);
             $rawHeaders[] = $header . ': ' . $value;
         }
 
         return [$absUrl, $rawHeaders, $params, $hasFile, $myApiKey];
     }
 
-    private function _maybeEmitStripeNotice($rheaders)
+    private function _maybeEmitStripeNotice($rheaders, $getEnv = null)
     {
-        if (isset($rheaders['stripe-notice']) && \is_string($rheaders['stripe-notice'])) {
-            \trigger_error($rheaders['stripe-notice'], \E_USER_WARNING);
+        if (!isset($rheaders['stripe-notice']) || !\is_string($rheaders['stripe-notice'])) {
+            return;
         }
+
+        if (null === $getEnv) {
+            $getEnv = '\getenv';
+        }
+
+        $aiAgent = self::_detectAIAgent($getEnv);
+        $suppressionValue = $getEnv('STRIPE_SUPPRESS_NOTICES');
+        $shouldSuppress = '' === $aiAgent
+            && false !== $suppressionValue
+            && 'true' === \strtolower($suppressionValue);
+        if ($shouldSuppress) {
+            return;
+        }
+
+        $notice = $rheaders['stripe-notice'];
+        if ('' === $aiAgent) {
+            $notice .= "\nTo suppress Stripe notices in test and sandbox environments, set the STRIPE_SUPPRESS_NOTICES environment variable to true.";
+        }
+
+        \trigger_error($notice, \E_USER_WARNING);
     }
 
     /**
@@ -644,7 +926,7 @@ class ApiRequestor
      * @param string[] $usage
      * @param callable $readBodyChunkCallable
      * @param 'v1'|'v2' $apiMode
-     * @param int $maxNetworkRetries
+     * @param null|int $maxNetworkRetries
      *
      * @return array
      *
@@ -664,6 +946,7 @@ class ApiRequestor
             $params,
             $hasFile,
             $readBodyChunkCallable,
+            $apiMode,
             $maxNetworkRetries
         );
 

@@ -12,11 +12,26 @@ namespace Stripe\Service;
 class PaymentRecordService extends AbstractService
 {
     /**
+     * List all the Payment Records for a given merchant.
+     *
+     * @param null|array{created_after?: int, created_before?: int, ending_before?: string, expand?: string[], limit?: int, starting_after?: string} $params
+     * @param null|RequestOptionsArray|\Stripe\Util\RequestOptions $opts
+     *
+     * @return \Stripe\Collection<\Stripe\PaymentRecord>
+     *
+     * @throws \Stripe\Exception\ApiErrorException if the request fails
+     */
+    public function all($params = null, $opts = null)
+    {
+        return $this->requestCollection('get', '/v1/payment_records', $params, $opts);
+    }
+
+    /**
      * Report a new Payment Record. You may report a Payment Record as it is
      * initialized and later report updates through the other report_* methods, or
      * report Payment  Records in a terminal state directly, through this method.
      *
-     * @param null|array{amount_requested: array{currency: string, value: int}, customer_details?: array{customer?: string, email?: string, name?: string, phone?: string}, customer_presence?: string, description?: string, expand?: string[], failed?: array{failed_at: int}, guaranteed?: array{guaranteed_at: int}, initiated_at: int, metadata?: null|array<string, string>, outcome?: string, payment_method_details: array{billing_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, email?: string, name?: string, phone?: string}, custom?: array{display_name?: string, type?: string}, payment_method?: string, type?: string}, processor_details?: array{custom?: array{payment_reference: string}, type: string}, shipping_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, name?: string, phone?: string}} $params
+     * @param null|array{amount_requested: array{currency: string, value: int}, canceled?: array{canceled_at: int}, customer_details?: array{customer?: string, email?: string, name?: string, phone?: string}, customer_presence?: string, description?: string, expand?: string[], failed?: array{failed_at: int}, guaranteed?: array{guaranteed_at: int}, initiated_at: int, metadata?: null|array<string, string>, outcome?: string, payment_method_details: array{billing_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, email?: string, name?: string, phone?: string}, custom?: array{display_name?: string, type?: string}, payment_method?: string, type?: string}, processor_details?: array{custom?: array{payment_reference: string}, type: string}, shipping_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, name?: string, phone?: string}} $params
      * @param null|RequestOptionsArray|\Stripe\Util\RequestOptions $opts
      *
      * @return \Stripe\PaymentRecord
@@ -34,7 +49,7 @@ class PaymentRecordService extends AbstractService
      * failed.
      *
      * @param string $id
-     * @param null|array{description?: string, expand?: string[], failed?: array{failed_at: int}, guaranteed?: array{guaranteed_at: int}, initiated_at: int, metadata?: null|array<string, string>, outcome?: string, payment_method_details?: array{billing_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, email?: string, name?: string, phone?: string}, custom?: array{display_name?: string, type?: string}, payment_method?: string, type?: string}, shipping_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, name?: string, phone?: string}} $params
+     * @param null|array{canceled?: array{canceled_at: int}, description?: string, expand?: string[], failed?: array{failed_at: int}, guaranteed?: array{guaranteed_at: int}, initiated_at: int, metadata?: null|array<string, string>, outcome?: string, payment_method_details?: array{billing_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, email?: string, name?: string, phone?: string}, custom?: array{display_name?: string, type?: string}, payment_method?: string, type?: string}, shipping_details?: array{address?: array{city?: string, country?: string, line1?: string, line2?: string, postal_code?: string, state?: string}, name?: string, phone?: string}} $params
      * @param null|RequestOptionsArray|\Stripe\Util\RequestOptions $opts
      *
      * @return \Stripe\PaymentRecord

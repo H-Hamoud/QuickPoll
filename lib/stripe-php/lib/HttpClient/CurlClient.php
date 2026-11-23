@@ -258,7 +258,14 @@ class CurlClient implements ClientInterface, StreamingClientInterface
         return [];
     }
 
-    private function constructCurlOptions($method, $absUrl, $headers, $body, $opts, $apiMode)
+    private function getMaxNetworkRetries($maxNetworkRetries)
+    {
+        return null === $maxNetworkRetries
+            ? Stripe::getMaxNetworkRetries()
+            : $maxNetworkRetries;
+    }
+
+    private function constructCurlOptions($method, $absUrl, $headers, $body, $opts, $apiMode, $maxNetworkRetries)
     {
         if ('get' === $method) {
             $opts[\CURLOPT_HTTPGET] = 1;
@@ -287,7 +294,7 @@ class CurlClient implements ClientInterface, StreamingClientInterface
                 }
             } else {
                 // v1 requests should keep old behavior for consistency
-                if ('post' === $method && Stripe::$maxNetworkRetries > 0) {
+                if ('post' === $method && $this->getMaxNetworkRetries($maxNetworkRetries) > 0) {
                     $headers[] = 'Idempotency-Key: ' . $this->randomGenerator->uuid();
                 }
             }
@@ -332,14 +339,15 @@ class CurlClient implements ClientInterface, StreamingClientInterface
      * @param array $params
      * @param bool $hasFile
      * @param 'v1'|'v2' $apiMode
+     * @param null|int $maxNetworkRetries
      */
-    private function constructRequest($method, $absUrl, $headers, $params, $hasFile, $apiMode)
+    private function constructRequest($method, $absUrl, $headers, $params, $hasFile, $apiMode, $maxNetworkRetries)
     {
         $method = \strtolower($method);
 
         $opts = $this->calculateDefaultOptions($method, $absUrl, $headers, $params, $hasFile);
         list($absUrl, $body) = $this->constructUrlAndBody($method, $absUrl, $params, $hasFile, $apiMode);
-        $opts = $this->constructCurlOptions($method, $absUrl, $headers, $body, $opts, $apiMode);
+        $opts = $this->constructCurlOptions($method, $absUrl, $headers, $body, $opts, $apiMode, $maxNetworkRetries);
 
         return [$opts, $absUrl];
     }
@@ -355,7 +363,7 @@ class CurlClient implements ClientInterface, StreamingClientInterface
      */
     public function request($method, $absUrl, $headers, $params, $hasFile, $apiMode = 'v1', $maxNetworkRetries = null)
     {
-        list($opts, $absUrl) = $this->constructRequest($method, $absUrl, $headers, $params, $hasFile, $apiMode);
+        list($opts, $absUrl) = $this->constructRequest($method, $absUrl, $headers, $params, $hasFile, $apiMode, $maxNetworkRetries);
         list($rbody, $rcode, $rheaders) = $this->executeRequestWithRetries($opts, $absUrl, $maxNetworkRetries);
 
         return [$rbody, $rcode, $rheaders];
@@ -373,7 +381,7 @@ class CurlClient implements ClientInterface, StreamingClientInterface
      */
     public function requestStream($method, $absUrl, $headers, $params, $hasFile, $readBodyChunk, $apiMode = 'v1', $maxNetworkRetries = null)
     {
-        list($opts, $absUrl) = $this->constructRequest($method, $absUrl, $headers, $params, $hasFile, $apiMode);
+        list($opts, $absUrl) = $this->constructRequest($method, $absUrl, $headers, $params, $hasFile, $apiMode, $maxNetworkRetries);
         $opts[\CURLOPT_RETURNTRANSFER] = false;
         list($rbody, $rcode, $rheaders) = $this->executeStreamingRequestWithRetries($opts, $absUrl, $readBodyChunk, $maxNetworkRetries);
 
@@ -532,7 +540,7 @@ class CurlClient implements ClientInterface, StreamingClientInterface
 
             if ($shouldRetry) {
                 ++$numRetries;
-                $sleepSeconds = $this->sleepTime($numRetries, $lastRHeaders);
+                $sleepSeconds = $this->sleepTime($numRetries);
                 \usleep((int) ($sleepSeconds * 1000000));
             } else {
                 break;
@@ -592,7 +600,7 @@ class CurlClient implements ClientInterface, StreamingClientInterface
 
             if ($shouldRetry) {
                 ++$numRetries;
-                $sleepSeconds = $this->sleepTime($numRetries, $rheaders);
+                $sleepSeconds = $this->sleepTime($numRetries);
                 \usleep((int) ($sleepSeconds * 1000000));
             } else {
                 break;
@@ -666,12 +674,7 @@ class CurlClient implements ClientInterface, StreamingClientInterface
      */
     private function shouldRetry($errno, $rcode, $rheaders, $numRetries, $maxNetworkRetries)
     {
-        if (null === $maxNetworkRetries) {
-            // all calls from a StripeClient have a number here, so we only see `null` (and use the global configuration) if coming from a non-client call.
-            $maxNetworkRetries = Stripe::getMaxNetworkRetries();
-        }
-
-        if ($numRetries >= $maxNetworkRetries) {
+        if ($numRetries >= $this->getMaxNetworkRetries($maxNetworkRetries)) {
             return false;
         }
 
@@ -719,11 +722,10 @@ class CurlClient implements ClientInterface, StreamingClientInterface
      * Provides the number of seconds to wait before retrying a request.
      *
      * @param int $numRetries
-     * @param array|Util\CaseInsensitiveArray $rheaders
      *
      * @return int
      */
-    private function sleepTime($numRetries, $rheaders)
+    private function sleepTime($numRetries)
     {
         // Apply exponential backoff with $initialNetworkRetryDelay on the
         // number of $numRetries so far as inputs. Do not allow the number to exceed
@@ -735,18 +737,8 @@ class CurlClient implements ClientInterface, StreamingClientInterface
 
         // Apply some jitter by randomizing the value in the range of
         // ($sleepSeconds / 2) to ($sleepSeconds).
-        $sleepSeconds *= 0.5 * (1 + $this->randomGenerator->randFloat());
-
         // But never sleep less than the base sleep seconds.
-        $sleepSeconds = \max(Stripe::getInitialNetworkRetryDelay(), $sleepSeconds);
-
-        // And never sleep less than the time the API asks us to wait, assuming it's a reasonable ask.
-        $retryAfter = isset($rheaders['retry-after']) ? (float) ($rheaders['retry-after']) : 0.0;
-        if (\floor($retryAfter) === $retryAfter && $retryAfter <= Stripe::getMaxRetryAfter()) {
-            $sleepSeconds = \max($sleepSeconds, $retryAfter);
-        }
-
-        return $sleepSeconds;
+        return \max(Stripe::getInitialNetworkRetryDelay(), $sleepSeconds * 0.5 * (1 + $this->randomGenerator->randFloat()));
     }
 
     /**
