@@ -1,13 +1,17 @@
-# lib/ – Third-party code
+# lib/ – third-party code
 
-This folder contains code that was **not written by me**.
+Everything in this folder is NOT written by the project author.
 
-## stripe-php
+- `stripe-php/` – official Stripe PHP library (MIT licence, see
+  `stripe-php/LICENSE`), https://github.com/stripe/stripe-php
+  Version: see `stripe-php/VERSION` (23.0.0 when this was packaged).
+  Loaded in exactly one place: `stripe_boot()` in `includes/billing.php`.
 
-- Source: https://github.com/stripe/stripe-php
-- License: MIT
-- Purpose: official Stripe PHP library, used for the subscription
-  payment (Stripe Checkout, sandbox mode).
-- Used in: `subscription.php`
+Updating: download a release from GitHub and replace the folder
+(`init.php`, `lib/`, `data/`, `LICENSE`, `VERSION` are enough). Then run
+`php tests/run.php` – `billing_test.php` checks the webhook signature
+with the library – and go through the checklist in `docs/PAYMENTS.md`,
+because a new library version also means a newer Stripe API version.
 
-Everything outside this folder is my own code.
+The application also runs without this folder: the subscription page
+then shows that online payment is not set up.
